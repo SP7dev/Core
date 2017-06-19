@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using CoreFirst.Data.DAL;
 using CoreFirst.Data.Entities;
 using CoreFirst.Service.Services;
-
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CoreFirst.Web.Controllers
 {
@@ -25,7 +20,6 @@ namespace CoreFirst.Web.Controllers
         #endregion
 
         #region >> Studetn List <<
-        // GET: Students
         public async Task<IActionResult> Index()
         {
             var data = await _studentService.GetStudents();
@@ -34,7 +28,6 @@ namespace CoreFirst.Web.Controllers
         #endregion
 
         #region >> Student Details <<
-        // GET: Students/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -52,7 +45,6 @@ namespace CoreFirst.Web.Controllers
         #endregion
 
         #region >> Student Insert <<
-        // GET: Students/Create
         public IActionResult Create()
         {
             return View();
@@ -73,10 +65,10 @@ namespace CoreFirst.Web.Controllers
                 }
             }
             return View(student);
-        } 
+        }
         #endregion
-
         
+        #region >> Student Update <<
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -84,14 +76,14 @@ namespace CoreFirst.Web.Controllers
                 return NotFound();
             }
 
-            var student = await _studentService.GetStudentEdit(id.Value);
+            var student = await _studentService.GetStudentById(id.Value);
             if (student == null)
             {
                 return NotFound();
             }
             return View(student);
         }
-                
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ID,LastName,FirstMidName,EnrollmentDate")] Student student)
@@ -111,8 +103,9 @@ namespace CoreFirst.Web.Controllers
             }
             return View(student);
         }
-
-        // GET: Students/Delete/5
+        #endregion
+        
+        #region >> Student Delete <<
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -120,8 +113,7 @@ namespace CoreFirst.Web.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students
-                .SingleOrDefaultAsync(m => m.ID == id);
+            var student = await _studentService.GetStudentById(id.Value);
             if (student == null)
             {
                 return NotFound();
@@ -130,20 +122,19 @@ namespace CoreFirst.Web.Controllers
             return View(student);
         }
 
-        // POST: Students/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var student = await _context.Students.SingleOrDefaultAsync(m => m.ID == id);
-            _context.Students.Remove(student);
-            await _context.SaveChangesAsync();
+            bool isvalid = await _studentService.StudentDelete(id);
+            if (isvalid)
+            {
+                return RedirectToAction("Index");
+            }
+            //Error Msg:
             return RedirectToAction("Index");
-        }
+        } 
+        #endregion
 
-        private bool StudentExists(int id)
-        {
-            return _context.Students.Any(e => e.ID == id);
-        }
     }
 }
